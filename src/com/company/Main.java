@@ -1,5 +1,3 @@
-package com.company;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,8 +13,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String endpoint = "https://api.nbp.pl/api/cenyzlota/last/2";
 
+        String endpoint = "https://api.nbp.pl/api/cenyzlota/last/30";
+        ArrayList<com.company.GoldPrice> prices = new ArrayList<>();
         try {
             URL url = new URL(endpoint);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -28,21 +27,32 @@ public class Main {
             InputStreamReader input = new InputStreamReader(connection.getInputStream());
             BufferedReader bufferedReader = new BufferedReader(input);
             String output;
-            ArrayList<GoldPrice> prices = new ArrayList<>();
+            ArrayList<Float> tableOfprices = new ArrayList<Float>();
             while ((output = bufferedReader.readLine()) != null) {
+                //System.out.println(output);
                 output = output.replace("[{", "");
                 output = output.replace("}]", "");
                 output = output.replace("{", "");
                 output = output.trim();
                 String[] outputs = output.split("},");
+
                 for (String element : outputs) {
+                    String price = element.substring(27, 32);
+                    Float price_float = Float.valueOf(price);
+                    tableOfprices.add(price_float);
+                    //System.out.println(element);
                     String[] elements = element.split(",");
-//                    System.out.println(element);
-                    for (int i = 0; i <= elements.length; i+=2) {
-                        prices.add(new GoldPrice(parseDate(elements[0]), parsePrice(elements[1])));
-                    }
+                    prices.add(new com.company.GoldPrice(parseDate(elements[0]), parsePrice(elements[1])));
                 }
             }
+            float averagePrice = 0;
+            float sum = 0;
+            for(Float element : tableOfprices){
+                sum += element;
+            }
+            averagePrice = sum / tableOfprices.size();
+            System.out.println(tableOfprices);
+            System.out.println(averagePrice);
             prices.forEach(System.out::println);
             connection.disconnect();
         } catch (MalformedURLException e) {
